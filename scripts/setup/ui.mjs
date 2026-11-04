@@ -74,14 +74,19 @@ export function createPrompter() {
 
   function nextLine() {
     if (queue.length) return Promise.resolve(queue.shift());
-    if (closed) return Promise.reject(new CancelledError());
+    if (closed || rl.closed) return Promise.reject(new CancelledError());
     return new Promise((resolve, reject) => waiters.push({ resolve, reject }));
   }
 
   async function raw(promptText, { prefill = "", secret = false } = {}) {
-    rl.setPrompt(promptText);
-    rl.prompt();
-    if (interactive && prefill && !secret) rl.write(prefill);
+    if (closed || rl.closed) {
+      // Piped input already ended; answer from the queued lines (or cancel).
+      stdout.write(promptText);
+    } else {
+      rl.setPrompt(promptText);
+      rl.prompt();
+      if (interactive && prefill && !secret) rl.write(prefill);
+    }
     muted = secret;
     try {
       const line = await nextLine();
