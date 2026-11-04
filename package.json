@@ -1,12 +1,14 @@
 {
-  "name": "anshumancdx-web",
+  "name": "pewee",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "create-admin": "node scripts/create-admin.mjs"
   },
   "dependencies": {
     "@tiptap/extension-code-block-lowlight": "^3.23.6",
@@ -20,25 +22,20 @@
     "clsx": "^2.1.1",
     "highlight.js": "^11.11.1",
     "jose": "^6.2.3",
-    "js-cookie": "^3.0.7",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.575.0",
-    "marked": "^18.0.4",
     "mongoose": "^9.2.3",
     "motion": "^12.40.0",
     "next": "16.1.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-pdf": "^10.4.1",
-    "react-server-dom-webpack": "^19.3.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@next/env": "^16.1.6",
     "@tailwindcss/postcss": "^4.2.4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/bcrypt": "^6.0.0",
-    "@types/js-cookie": "^3.0.6",
-    "@types/marked": "^5.0.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
