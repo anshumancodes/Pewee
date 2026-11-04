@@ -568,17 +568,21 @@ async function run(p) {
   }
   if (ensureEnvExample()) log.ok("Created .env.example");
 
-  const dbReady = Boolean(mongo.uri) && (mongo.status === "kept" || writeEnv);
+  // The connection the app will actually use after this run.
+  const newDbSaved = mongo.status === "new" && writeEnv;
+  const dbReady = newDbSaved || Boolean(env.MONGO_DB_URI);
   let adminCreated = false;
-  if (cms.admin && dbReady) {
+  if (cms.admin && mongo.status === "new" && !writeEnv) {
+    log.warn("Skipped creating the admin account because the new MongoDB details weren't saved to .env.");
+  } else if (cms.admin && dbReady) {
     log.info();
     const res = spawnSync(process.execPath, [join(ROOT, "scripts", "create-admin.mjs")], {
       cwd: ROOT,
       stdio: ["ignore", "inherit", "inherit"],
       env: {
         ...process.env,
-        MONGO_DB_URI: mongo.uri,
-        ...(mongo.dbName ? { DB_NAME: mongo.dbName } : env.DB_NAME ? { DB_NAME: env.DB_NAME } : {}),
+        MONGO_DB_URI: newDbSaved ? mongo.uri : env.MONGO_DB_URI,
+        ...(newDbSaved ? { DB_NAME: mongo.dbName } : env.DB_NAME ? { DB_NAME: env.DB_NAME } : {}),
         ADMIN_EMAIL: cms.admin.email,
         ADMIN_NAME: cms.admin.name,
         ADMIN_USERNAME: cms.admin.username,
@@ -598,7 +602,7 @@ async function run(p) {
       `Add your MongoDB connection to .env (see .env.example):\n       MONGO_DB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/\n       DB_NAME=pewee\n     Then run ${c.cyan("npm run setup")} again or ${c.cyan("npm run create-admin")}.`
     );
   } else if (!adminCreated) {
-    steps.push(`Create your CMS login: ${c.cyan("npm run create-admin")}`);
+    steps.push(`${firstRun ? "Create your CMS login" : "Need a (new) CMS login?"} ${c.cyan("npm run create-admin")}`);
   }
   steps.push(`Start the development server: ${c.cyan("npm run dev")}`);
   steps.push(`Open your blog: ${c.cyan("http://localhost:3000")}`);
