@@ -1,26 +1,131 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --background: #161616;
+  --foreground: #ffffff;
+  --accent:     #a3a3a3;  /* secondary text, nav default, body copy */
+  --muted:      #6b6b6b;  /* dim labels, dates, section tags */
+  --border:     #333333;  /* card outlines, dividers */
+  --surface:    #1e1e1e;  /* card / panel backgrounds */
+  --primary:    #ffffff;  /* inverted button / pill backgrounds */
+  --disabled:   #4d4d4d;  /* disabled pagination controls */
+
+  /* Fonts */
+  --font-head: var(--font-manrope);
+  --font-body: var(--font-faustina);
 }
+
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent:     var(--accent);
+  --color-muted:      var(--muted);
+  --color-border:     var(--border);
+  --color-surface:    var(--surface);
+  --color-primary:    var(--primary);
+  --color-disabled:   var(--disabled);
+
+  --font-sans:  var(--font-manrope),  sans-serif;
+  --font-serif: var(--font-faustina), serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-faustina), Georgia, serif;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--foreground);
+}
+
+/* Selection */
+::selection {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+
+
+
+@utility font-head {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+/* .font-body → Faustina (body copy) */
+@utility font-body {
+  font-family: var(--font-faustina), Georgia, serif;
+}
+
+/* .font-body-italic → Faustina italic */
+@utility font-body-italic {
+  font-family: var(--font-faustina), Georgia, serif;
+  font-style: italic;
+}
+
+/* .tag → small-caps section label style */
+@utility tag {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* .btn-primary → filled white button */
+@utility btn-primary {
+  background-color: var(--primary);
+  color: var(--background);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+/* .btn-outline → bordered ghost button */
+@utility btn-outline {
+  background-color: transparent;
+  color: var(--foreground);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
