@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getAllBlogs, formatDate } from "@/lib/blog";
 import BlogCard from "@/components/blog/blog-cards";
-import { siteConfig } from "@/site.config";
+import { siteConfig, defaultShareMetadata } from "@/site.config";
 
 // Incremental static regeneration; CMS edits also trigger on-demand revalidation
 export const revalidate = 3600;
@@ -13,13 +13,14 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
+    ...defaultShareMetadata.openGraph,
     title: siteConfig.ogTitle,
     description: siteConfig.ogDescription,
     url: "/",
     type: "website",
   },
   twitter: {
-    card: siteConfig.twitterCard,
+    ...defaultShareMetadata.twitter,
     title: siteConfig.ogTitle,
     description: siteConfig.ogDescription,
   },
