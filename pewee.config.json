@@ -1,0 +1,43 @@
+{
+  "configured": false,
+  "siteName": "pewee",
+  "tagline": "Just write. Just publish.",
+  "description": "A minimal, self-hosted blog. Notes, essays and things learned while building.",
+  "siteUrl": "http://localhost:3000",
+  "language": "en",
+  "locale": "en_US",
+  "timezone": "",
+  "contactEmail": "",
+  "author": {
+    "name": "pewee",
+    "bio": ""
+  },
+  "seo": {
+    "title": "pewee — a minimal blog",
+    "description": "A minimal, self-hosted blog. Notes, essays and things learned while building.",
+    "keywords": ["blog", "writing", "notes"],
+    "ogTitle": "",
+    "ogDescription": "",
+    "ogImage": "/Pewee..png",
+    "twitterCard": "summary_large_image",
+    "twitterHandle": "",
+    "robots": "index, follow"
+  },
+  "socials": {
+    "github": "https://github.com/anshumancodes/Pewee",
+    "twitter": "",
+    "linkedin": "",
+    "instagram": "",
+    "youtube": "",
+    "website": ""
+  },
+  "branding": {
+    "logo": "/Pewee..png",
+    "favicon": "/Pewee..png",
+    "themeColor": "#161616",
+    "showCredit": true
+  },
+  "cms": {
+    "path": "/dashboard"
+  }
+}
