@@ -181,6 +181,26 @@ export function absoluteUrl(path = "/"): string {
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/**
+ * Site-wide Open Graph / Twitter fields. Next.js replaces (not merges) a parent's
+ * `openGraph`/`twitter` objects, so pages that set their own spread these in.
+ */
+export const defaultShareMetadata = {
+  openGraph: {
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    images: [{ url: siteConfig.ogImage, alt: siteConfig.name }],
+  },
+  twitter: {
+    card: siteConfig.twitterCard,
+    ...(siteConfig.twitterHandle && {
+      site: siteConfig.twitterHandle,
+      creator: siteConfig.twitterHandle,
+    }),
+    images: [siteConfig.ogImage],
+  },
+};
+
 /** Path inside the CMS, e.g. cmsHref("/manage-blog") → "/dashboard/manage-blog". */
 export function cmsHref(subpath = ""): string {
   return `${cmsPath}${subpath}`;
