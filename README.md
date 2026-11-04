@@ -4,22 +4,23 @@
 
 _Just write. Just publish._
 
-Pewee is a minimal, self-hosted, open-source blog with a built-in CMS dashboard, built with Next.js and MongoDB. Clone it, add your name and logo, connect a database, and deploy it as your own blog.
+Pewee is a minimal, self-hosted, open-source blog with a built-in CMS dashboard, built with Next.js and MongoDB. Clone it, run `npm run setup`, answer a few questions, and deploy it as your own blog. No need to hunt through the code to rebrand it.
 
 - **Reading experience:** a quiet, typographic dark theme, a floating table of contents, reading time, and share links.
 - **CMS dashboard:** a rich-text (Tiptap) editor with live preview, plus create, edit, archive and delete.
 - **SEO:** per-post metadata, Open Graph and Twitter cards, JSON-LD, a `sitemap.xml`, `robots.txt` and an RSS feed.
 - **Fast:** pages are statically generated and refresh as soon as you publish.
-- **Yours:** all branding lives in one file.
+- **Yours in two minutes:** an interactive setup wizard configures your name, URL, author, SEO, social links, logo, MongoDB and admin account. All public branding lives in one file, `pewee.config.json`.
 
 ---
 
 ## Contents
 
 - [Quick start](#quick-start)
+- [First-time setup (`npm run setup`)](#first-time-setup)
 - [MongoDB setup](#mongodb-setup)
 - [Environment variables](#environment-variables)
-- [Rebranding](#rebranding)
+- [Branding configuration](#branding-configuration)
 - [Using the CMS dashboard](#using-the-cms-dashboard)
 - [Deployment](#deployment)
 - [Project structure](#project-structure)
@@ -30,26 +31,60 @@ Pewee is a minimal, self-hosted, open-source blog with a built-in CMS dashboard,
 
 ## Quick start
 
-Requirements: **Node.js 20.9+** and a MongoDB database (see [MongoDB setup](#mongodb-setup)).
+Requirements: **Node.js 20.9+**, npm, and a MongoDB database (see [MongoDB setup](#mongodb-setup)). You can also connect the database later.
 
 ```bash
 git clone https://github.com/anshumancodes/Pewee.git my-blog
 cd my-blog
 npm install
-
-cp .env.example .env        # then fill in MONGO_DB_URI and JWT_SECRET
-npm run create-admin        # create your CMS login
+npm run setup               # answer the questions; this configures everything
 npm run dev
 ```
 
 - Blog: http://localhost:3000
-- CMS sign-in: http://localhost:3000/auth (redirects to `/dashboard` once you're signed in)
+- CMS sign-in: http://localhost:3000/auth (redirects to your CMS route, `/dashboard` by default, once you're signed in)
+
+That's it: clone → install → setup → start publishing.
+
+---
+
+## First-time setup
+
+`npm run setup` is an interactive wizard that turns Pewee into *your* blog. It asks, in groups:
+
+| Group | What it asks |
+| ----- | ------------ |
+| **Blog identity** | Name, tagline, what the blog is about, language, author name and optional bio. |
+| **Website** | Site URL (normalised, no trailing slash), public contact email, timezone for post dates, and optional GitHub, X/Twitter, LinkedIn, Instagram, YouTube and website links. Handles like `@you` are expanded to full URLs. |
+| **SEO** | Default title, meta description, keywords, Open Graph title and description, X/Twitter card style and handle, and whether search engines should index the site. It suggests good defaults from your name, tagline and description, and you can edit them. |
+| **Branding assets** | Optional custom logo, favicon and social sharing image. Local files are validated and copied to `public/brand/`, and a URL works for the sharing image. Skip any of these to keep the Pewee defaults. |
+| **MongoDB** | Connect now (the URI is typed hidden and never printed, and you can test the connection) or configure it later. |
+| **CMS** | The dashboard route (default `/dashboard`), the admin email, and optionally creating the admin account now. |
+
+You then see a summary and confirm before anything is written. The wizard writes:
+
+- **`pewee.config.json`**: public branding and SEO. Commit this file.
+- **`public/brand/`**: copies of any logo, favicon or sharing image you supplied. Commit these too.
+- **`.env`**: `MONGO_DB_URI`, `DB_NAME`, `ADMIN_EMAIL` and a generated `JWT_SECRET`. `.env` is git-ignored and its values are never printed.
+
+The admin password is typed hidden and passed straight to `npm run create-admin`, which stores only a bcrypt hash. It's never written to a file.
+
+**Running it again is safe.** Pewee detects an existing configuration and shows the current settings. You can then update them (current values are pre-filled), reset branding, or exit. It never touches posts, users or other database records. It changes only the `.env` keys it manages, keeps every other line, and asks before replacing an existing value. Press <kbd>Ctrl</kbd>+<kbd>C</kbd> at any time to quit without saving.
+
+```bash
+npm run setup               # set up, or update existing settings
+npm run setup -- --reset    # reset pewee.config.json to the Pewee defaults (asks first)
+```
+
+> Restart `npm run dev` after changing the CMS route. Rebuild for production after any change.
 
 ---
 
 ## MongoDB setup
 
 Pewee stores posts and admin accounts in MongoDB through Mongoose. You don't need to create collections or run migrations; they're created on first use.
+
+The easiest path is to get a connection string (below) and paste it when `npm run setup` asks. If you picked "configure later", add `MONGO_DB_URI` and `DB_NAME` to `.env` yourself (see [`.env.example`](.env.example)), then run `npm run setup` again or `npm run create-admin`.
 
 ### Option A: MongoDB Atlas (hosted, free tier available)
 
@@ -85,52 +120,63 @@ DB_NAME=pewee
 
 ## Environment variables
 
-All variables are documented in [`.env.example`](.env.example).
+`npm run setup` writes these for you. They're all documented in [`.env.example`](.env.example). Only secrets and deployment settings live here. Branding lives in `pewee.config.json`.
 
 | Variable              | Required          | Description |
 | --------------------- | ----------------- | ----------- |
 | `MONGO_DB_URI`        | ✅                | MongoDB connection string. |
 | `DB_NAME`             | recommended       | Database name. Optional if the URI already includes one. |
 | `JWT_SECRET`          | ✅ in production  | Secret that signs CMS sessions. Generate one with `openssl rand -base64 32`. |
-| `NEXT_PUBLIC_APP_URL` | ✅ in production  | Your public URL, with no trailing slash (e.g. `https://blog.example.com`). Canonical URLs, Open Graph, the sitemap and RSS all use it. |
+| `ADMIN_EMAIL`         | optional          | Default email for `npm run create-admin`. |
+| `NEXT_PUBLIC_APP_URL` | optional          | Overrides `siteUrl` from `pewee.config.json`, e.g. for preview deployments. No trailing slash. |
 | `NEXT_PUBLIC_GA_ID`   | optional          | Google Analytics ID (`G-…`). Analytics is off when this is empty. |
 
 > `NEXT_PUBLIC_*` values are baked in at build time, so rebuild after changing them.
 
 ---
 
-## Rebranding
+## Branding configuration
 
-**Everything that identifies the site lives in [`src/site.config.ts`](src/site.config.ts).** Edit that one file:
+**All public branding lives in [`pewee.config.json`](pewee.config.json)**, the single source of truth. `npm run setup` generates it, and you can also edit it by hand. [`src/site.config.ts`](src/site.config.ts) reads it and exposes it to the app.
 
-```ts
-export const siteConfig = {
-  name: "pewee",                         // navbar, footer, dashboard, <title> suffix
-  tagline: "Just write. Just publish.",  // under the name in the footer
-  title: "pewee — a minimal blog",       // home page <title>
-  description: "…",                      // default meta description and RSS description
-  logo: "/Pewee..png",                   // navbar logo (file in /public)
-  ogImage: "/Pewee..png",                // default social share image
-  icon: "/Pewee..png",                   // favicon
-  author: { name: "pewee", url: siteUrl },
-  twitterHandle: "",                     // "@you": adds twitter:site / twitter:creator
-  socialLinks: [{ label: "GitHub", href: "https://github.com/you" }],
-  discussLink: null,                     // e.g. { label: "X", href: "https://x.com/you" }
-  announcement: null,                    // optional banner above the navbar
-  credit: { label: "Pewee", href: "…" }, // "Built with Pewee" in the footer, or null
-  // …
-};
+```jsonc
+{
+  "configured": true,                  // set by the wizard
+  "siteName": "My Engineering Notes",  // navbar, footer, dashboard, <title> suffix, RSS, JSON-LD
+  "tagline": "Notes from my engineering journey",
+  "description": "What the blog is about (RSS feed, structured data)",
+  "siteUrl": "https://example.com",    // canonical URLs, Open Graph, sitemap, robots, RSS
+  "language": "en", "locale": "en_US", // <html lang>, og:locale, date formatting
+  "timezone": "Europe/London",         // post dates ("" = server timezone)
+  "contactEmail": "",
+  "author": { "name": "John Doe", "bio": "" },   // default post author, metadata, JSON-LD
+  "seo": {
+    "title": "…", "description": "…", "keywords": [],
+    "ogTitle": "", "ogDescription": "",           // "" = same as title/description
+    "ogImage": "/brand/og-image.png",             // default share image (path in /public or URL)
+    "twitterCard": "summary_large_image",         // or "summary"
+    "twitterHandle": "johndoe",                   // adds twitter:site / twitter:creator
+    "robots": "index, follow"                     // or "noindex, nofollow", …
+  },
+  "socials": { "github": "", "twitter": "", "linkedin": "", "instagram": "", "youtube": "", "website": "" },
+  "branding": { "logo": "/brand/logo.png", "favicon": "/brand/logo.png", "themeColor": "#161616", "showCredit": true },
+  "cms": { "path": "/dashboard" }
+}
 ```
 
-To replace the logo, drop your image into `public/` and point `logo`, `icon` and `ogImage` at it. For best results, use a 1200×630 image for `ogImage`.
+Post titles, excerpts, authors and cover images always take precedence over these defaults on article pages.
 
-The visual theme (colors and fonts) is defined with CSS variables at the top of [`src/app/globals.css`](src/app/globals.css).
+Secrets never go in this file. Keep them in `.env`.
+
+A few rarely-changed options, such as the announcement banner and the article "Discuss" link, are still set directly in `src/site.config.ts`. The visual theme (colors and fonts) is defined with CSS variables at the top of [`src/app/globals.css`](src/app/globals.css).
 
 ---
 
 ## Using the CMS dashboard
 
 ### 1. Create an admin account
+
+`npm run setup` can do this for you. To create or reset an account separately:
 
 ```bash
 npm run create-admin
@@ -143,6 +189,8 @@ If you run the command again with an existing email, Pewee promotes that user to
 ### 2. Sign in
 
 Go to **`/auth`** and sign in. Sessions last 8 hours and use an HTTP-only cookie.
+
+The dashboard lives at `/dashboard` by default. If you chose a different route in setup (`cms.path`, e.g. `/admin`), the dashboard is served there, `/dashboard` redirects to it, and both are protected. The routes below assume the default.
 
 ### 3. Write and manage posts
 
@@ -166,8 +214,8 @@ Pewee is a standard Next.js app and runs anywhere that supports Node.js.
 
 ### Vercel
 
-1. Push your fork to GitHub and import it in Vercel.
-2. Add the environment variables: `MONGO_DB_URI`, `DB_NAME`, `JWT_SECRET`, `NEXT_PUBLIC_APP_URL` and, optionally, `NEXT_PUBLIC_GA_ID`.
+1. Run `npm run setup` locally, then commit `pewee.config.json` (and `public/brand/` if you added assets) and push your fork to GitHub. Import it in Vercel.
+2. Add the environment variables from your `.env`: `MONGO_DB_URI`, `DB_NAME`, `JWT_SECRET` and, optionally, `NEXT_PUBLIC_GA_ID`. Your site URL comes from `pewee.config.json`.
 3. In MongoDB Atlas **Network Access**, allow `0.0.0.0/0`. Vercel uses dynamic IPs, and the build itself reads from the database to pre-render pages.
 4. Deploy, then run `npm run create-admin` locally against the production database to create your login.
 
@@ -179,7 +227,7 @@ npm run build
 npm start          # serves on PORT (default 3000)
 ```
 
-Set the same environment variables on the host. If the build environment can't reach MongoDB, the build still succeeds. Pages render empty at first and fill in on the next request after the hourly revalidation, or as soon as you publish.
+Set the same environment variables on the host, and deploy with your committed `pewee.config.json`. If the build environment can't reach MongoDB, the build still succeeds. Pages render empty at first and fill in on the next request after the hourly revalidation, or as soon as you publish.
 
 ### After deploying
 
@@ -191,9 +239,10 @@ Set the same environment variables on the host. If the build environment can't r
 ## Project structure
 
 ```
+pewee.config.json             ← branding and SEO (generated by npm run setup)
 src/
-├── site.config.ts            ← branding and SEO defaults (edit me)
-├── proxy.ts                  ← protects /dashboard (Next.js middleware)
+├── site.config.ts            ← reads pewee.config.json for the app
+├── proxy.ts                  ← protects the CMS route (Next.js middleware)
 ├── app/
 │   ├── page.tsx              ← home: post list
 │   ├── blog/page.tsx         ← /blog: post list
@@ -211,7 +260,10 @@ src/
 │   ├── auth.ts               ← JWT session helpers
 │   └── revalidate.ts         ← cache refresh after CMS changes
 └── schemas/                  ← Mongoose models (Blog, User, Series)
-scripts/create-admin.mjs      ← create or reset an admin account
+scripts/
+├── setup.mjs                 ← interactive setup wizard (npm run setup)
+├── setup/                    ← wizard helpers: prompts, validation, file I/O
+└── create-admin.mjs          ← create or reset an admin account
 ```
 
 ---
@@ -236,6 +288,7 @@ All responses use the shape `{ statuscode, data, message }`. Write endpoints nee
 
 | Command | Description |
 | ------- | ----------- |
+| `npm run setup`        | Interactive first-time setup, or update your branding (safe to re-run). |
 | `npm run dev`          | Start the dev server. |
 | `npm run build`        | Create a production build. |
 | `npm start`            | Serve the production build. |
